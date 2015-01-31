@@ -23,12 +23,15 @@ class ViewController: UIViewController {
     
     var lemonsToPurchase = 0
     var iceCubesToPurchase = 0
+    var lemonsToMix = 0
+    var iceCubesToMix = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        updateMainView()
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -36,22 +39,145 @@ class ViewController: UIViewController {
     
     //IBActions
     @IBAction func purchaseLemonButtonPressed(sender: UIButton) {
+        if supplies.money >= price.lemon {
+            lemonsToPurchase += 1
+            supplies.money -= price.lemon
+            supplies.lemons += 1
+            updateMainView()
+        }
+        else {
+            showAlertWithText(message: "You don't have enough money")
+        }
     }
     @IBAction func purchaseIceCubeButtonPressed(sender: UIButton) {
+        if supplies.money >= price.iceCube {
+            iceCubesToPurchase += 1
+            supplies.money -= price.iceCube
+            supplies.iceCubes += 1
+            updateMainView()
+        }
+        else {
+            showAlertWithText(message: "You don't have enough money")
+        }
     }
     @IBAction func unpurchaseLemonButtonPressed(sender: UIButton) {
+        if lemonsToPurchase > 0 {
+            lemonsToPurchase -= 1
+            supplies.money += price.lemon
+            supplies.lemons -= 1
+            updateMainView()
+        }
+        else {
+            showAlertWithText(message: "You don't have lemon to return")
+        }
     }
     @IBAction func unpurchaseIceCubeButtonPressed(sender: UIButton) {
+        if iceCubesToPurchase > 0 {
+            iceCubesToPurchase -= 1
+            supplies.money += price.iceCube
+            supplies.iceCubes -= 1
+            updateMainView()
+        }
+        else {
+            showAlertWithText(message: "You don't have ice cube to return")
+        }
     }
     @IBAction func mixLemonButtonPressed(sender: UIButton) {
+        if supplies.lemons > 0 {
+            lemonsToPurchase = 0
+            supplies.lemons -= 1
+            lemonsToMix += 1
+            updateMainView()
+        }
+        else {
+            showAlertWithText(message: "You don't have enough lemon")
+        }
     }
     @IBAction func mixIceCubeButtonPressed(sender: UIButton) {
+        if supplies.iceCubes > 0 {
+            iceCubesToPurchase = 0
+            supplies.iceCubes -= 1
+            iceCubesToMix += 1
+            updateMainView()
+        }
+        else {
+            showAlertWithText(message: "You don't have enough ice cube")
+        }
     }
+    
     @IBAction func unmixLemonButtonPressed(sender: UIButton) {
+        if lemonsToMix > 0 {
+            lemonsToPurchase = 0
+            lemonsToMix -= 1
+            supplies.lemons += 1
+            updateMainView()
+        }
+        else {
+            showAlertWithText(message: "You have lemon to un-mix")
+        }
     }
     @IBAction func unmixIceCubeButtonPressed(sender: UIButton) {
+        if iceCubesToMix > 0 {
+            iceCubesToPurchase = 0
+            iceCubesToMix -= 1
+            supplies.iceCubes += 1
+            updateMainView()
+        }
+        else {
+            showAlertWithText(message: "You have ice cube to un-mix")
+        }
     }
     @IBAction func startDayButtonPressed(sender: UIButton) {
+        let customers = Int(arc4random_uniform(UInt32(11)))
+        println("WELCOME!! \(customers) CUSTOMERS!!")
+        if lemonsToMix == 0 || iceCubesToMix == 0 {
+            showAlertWithText(message: "You need to add at least 1 Lemon and 1 Ice Cube")
+        }
+        else {
+            let lemonadeRatio = Double(lemonsToMix) / Double(iceCubesToMix)
+            for x in 0...customers {
+                let preference = Double(arc4random_uniform(UInt32(101)))/100
+                println(preference)
+                if preference < 0.4 && lemonadeRatio > 1 {
+                    supplies.money += 1
+                    println("Paid")
+                }
+                else if preference > 0.6 && lemonadeRatio < 1 {
+                    supplies.money += 1
+                    println("Paid")
+                }
+                else if preference <= 0.6 && preference >= 0.4 && lemonadeRatio == 1 {
+                    supplies.money += 1
+                    println("Paid")
+                }
+                else {
+                    println("else statement evaluating")
+                }
+            }
+            lemonsToPurchase = 0
+            iceCubesToPurchase = 0
+            lemonsToMix = 0
+            iceCubesToMix = 0
+            updateMainView()
+        }
     }
+    
+    //Helper Functions
+    func updateMainView () {
+        moneySupplyCount.text = "$\(supplies.money)"
+        lemonSupplyCount.text = "\(supplies.lemons) Lemons"
+        iceCubeSupplyCount.text = "\(supplies.iceCubes) Ice Cubes"
+        lemonPurchaseCount.text = "\(lemonsToPurchase)"
+        iceCubePurchaseCount.text = "\(iceCubesToPurchase)"
+        lemonMixCount.text = "\(lemonsToMix)"
+        iceCubeMixCount.text = "\(iceCubesToMix)"
+    }
+    
+    func showAlertWithText (header: String = "Warning", message: String) {
+        var alert = UIAlertController(title: header, message: message, preferredStyle: UIAlertControllerStyle.Alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil))
+        self.presentViewController(alert, animated: true, completion: nil)
+    }
+    
 }
 
